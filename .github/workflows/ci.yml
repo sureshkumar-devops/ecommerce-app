@@ -27,7 +27,7 @@ jobs:
     - name: Inject Environment Variables into HTML
       run: |
          export DEPLOY_ENV=$DEPLOY_TARGET
-         export GIT_BRANCH = "${{ github.ref_name }}"
+         export GIT_BRANCH="${{ github.ref_name }}"
          export TAG=$TAG
          # Point to the app/ directory
          envsubst < app/index.html > app/index.tmp.html && mv app/index.tmp.html app/index.html
