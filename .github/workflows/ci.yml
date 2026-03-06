@@ -13,8 +13,8 @@ jobs:
     - name: Set Image Tag
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
-        SHORT_SHA=${GITHUB_SHA::7}
-        echo "TAG=${SHORT_SHA}" >> $GITHUB_ENV
+        SHORT_SHA=${GITHUB_SHA::7}        
+        echo "TAG=${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_ENV
         echo $GITHUB_ENV
 
         # Set ENV for the HTML injection step
