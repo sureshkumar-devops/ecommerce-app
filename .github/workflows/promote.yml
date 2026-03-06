@@ -1,0 +1,66 @@
+name: Promote
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+      description: "Promotion Target"
+      required: true
+        type: choice
+        options:         
+         - staging
+         - prod
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the Code
+      uses: actions/checkout@v4
+      with:
+        repository: sureshkumar-devops/ecommerce-gitops
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Promotion Logic
+      run: |
+        if [ "${{ github.event.inputs.target }}" == "staging" ]; then
+           SRC_BRANCH="dev"
+           DEST_BRANCH="staging"
+           SRC_ENV="dev"
+           DEST_ENV="staging"
+        else
+           SRC_BRANCH="staging"
+           DEST_BRANCH="master"                      
+           SRC_ENV="staging"
+           DEST_ENV="prod"
+        fi
+        
+        echo "Source Branch: $SRC_BRANCH"
+        echo "Destination Branch: $DEST_BRANCH" 
+
+        echo "Source Environment: $SRC_ENV"
+        echo "Destination Environment: $DEST_ENV"
+
+        git fetch origin      
+
+        # Read tag from SOURCE branch
+        git checkout origin/$SRC_BRANCH
+
+        IMAGE_TAG=$(grep 'tag:' environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d "'")
+
+        echo "Found Image Tag: $IMAGE_TAG" 
+      
+        # Switch to destination branch
+        git checkout $DEST_BRANCH
+
+        # Update destination env file        
+        sed -i "s/tag:.*/tag: \"$IMAGE_TAG\"/" environments/$DEST_ENV/values.yaml
+        echo "Promoting $IMAGE_TAG from $SRC_ENV → $DEST_ENV"
+
+    - name: Commit Changes
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+
+        git add environments
+        git commit -m "Promote image to ${{ github.event.inputs.target }}"
+        git push    
