@@ -3,12 +3,12 @@ on:
   workflow_dispatch:
     inputs:
       target:
-      description: "Promotion Target"
-      required: true
+        description: "Promotion Target"
+        required: true
         type: choice
         options:         
-         - staging
-         - prod
+          - staging
+          - prod
 jobs:
   promote:
     runs-on: ubuntu-latest
