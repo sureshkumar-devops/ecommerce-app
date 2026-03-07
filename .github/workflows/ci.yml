@@ -14,8 +14,7 @@ jobs:
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
         SHORT_SHA=${GITHUB_SHA::7}
-        echo "TAG=${SHORT_SHA}" >> $GITHUB_ENV
-        echo $GITHUB_ENV
+        echo "TAG=${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_ENV           
 
         # Set ENV for the HTML injection step
         if [ "$BRANCH_NAME" == "master" ]; then
@@ -23,7 +22,8 @@ jobs:
         else
            echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
         fi
-
+        echo "Final Tag created: ${TAG}"
+        
     - name: Display Bold Image Tag
       run: |
         # This will show the full path clearly in the logs
