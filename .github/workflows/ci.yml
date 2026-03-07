@@ -23,6 +23,13 @@ jobs:
         else
            echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
         fi
+        
+    - name: Display Bold Image Tag
+      run: |
+        # This will show the full path clearly in the logs
+        echo -e "---------------------------------------------------"
+        echo -e "BUILDING IMAGE: \033[1m${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}\033[0m"
+        echo -e "---------------------------------------------------"    
 
     - name: Inject Environment Variables into HTML
       run: |
@@ -45,6 +52,16 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
+
+    - name: Display Full Image Details
+      run: |
+        # Construct the full image name
+        FULL_IMAGE="${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}"
+        
+        # \033[1;32m is Bold Green | \033[1;36m is Bold Cyan | \033[0m is Reset
+        echo -e "DOCKER IMAGE: \033[1;36m${{ vars.DOCKER_USERNAME }}/ecommerce-app\033[0m"
+        echo -e "IMAGE TAG:    \033[1;32m${{ env.TAG }}\033[0m"
+        echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"    
 
 
 
