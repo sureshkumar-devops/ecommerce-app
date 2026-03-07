@@ -24,10 +24,20 @@ jobs:
            echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
         fi
 
+    - name: Display Bold Image Tag
+      run: |
+        # This will show the full path clearly in the logs
+        echo -e "---------------------------------------------------"
+        echo -e "BUILDING IMAGE: \033[1m${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}\033[0m"
+        echo -e "---------------------------------------------------"   
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3   
+
     - name: Inject Environment Variables into HTML
       run: |
          export DEPLOY_ENV=$DEPLOY_TARGET
-         export GIT_BRANCH = "${{ github.ref_name }}"
+         export GIT_BRANCH="${{ github.ref_name }}"
          export TAG=$TAG
          # Point to the app/ directory
          envsubst < app/index.html > app/index.tmp.html && mv app/index.tmp.html app/index.html
@@ -39,7 +49,7 @@ jobs:
          password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and Push Docker Image        
-      uses: docker/build-push-actions@v6
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
