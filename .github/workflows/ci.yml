@@ -23,13 +23,6 @@ jobs:
         else
            echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
         fi
-        
-    - name: Display Bold Image Tag
-      run: |
-        # This will show the full path clearly in the logs
-        echo -e "---------------------------------------------------"
-        echo -e "BUILDING IMAGE: \033[1m${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}\033[0m"
-        echo -e "---------------------------------------------------"    
 
     - name: Inject Environment Variables into HTML
       run: |
