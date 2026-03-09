@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Suresh as a DevOps and Cloud Engineer 2026</title>
   <style>
     body {
@@ -12,7 +12,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      /* Gradient background */
       background: linear-gradient(135deg, #00c6ff, #0072ff, #8e2de2, #4a00e0, #f12711, #f5af19);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
@@ -30,7 +29,7 @@
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
       text-align: center;
-      max-width: 600px;
+      max-width: 700px;
       backdrop-filter: blur(10px);
     }
 
@@ -78,46 +77,44 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     }
 
-    .workflow {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.workflow h2 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-}
-
-.workflow-gif {
-  max-width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-
-
-
-    /* Gradient button styles */
     .btn-blue { background: linear-gradient(45deg, #00c6ff, #0072ff); }
     .btn-purple { background: linear-gradient(45deg, #8e2de2, #4a00e0); }
     .btn-orange { background: linear-gradient(45deg, #f12711, #f5af19); }
+
+    .workflow {
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .workflow h2 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+
+    .workflow-gif {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h1>Welcome to Suresh DevOps Engineer and AWS Cloud Engineer - 2026</h1>
-  <!-- Placeholders replaced by CI/CD pipeline -->
   <p>Environment: <span class="info-tag">${DEPLOY_ENV}</span></p>
   <p>Branch: <span class="info-tag">${GIT_BRANCH}</span></p>
   <p>Tag: <span class="info-tag">${TAG}</span></p>
-  <div class="workflow">
-  <h2>CI/CD Workflow Overview</h2>
-  <img src="assets/ci_cd_workflow.png" alt="Workflow Diagram" class="workflow-gif">
-  </div>
+
   <div class="button-group">
     <button class="btn btn-blue">View Logs</button>
     <button class="btn btn-purple">Deploy Now</button>
     <button class="btn btn-orange">Settings</button>
+  </div>
+
+  <div class="workflow">
+    <h2>CI/CD Workflow Overview</h2>
+    <img src="assets/workflow.png" alt="Workflow Diagram" class="workflow-gif">
   </div>
 </div>
 
