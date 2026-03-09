@@ -78,6 +78,24 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     }
 
+    .workflow {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.workflow h2 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.workflow-gif {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+
+
     /* Gradient button styles */
     .btn-blue { background: linear-gradient(45deg, #00c6ff, #0072ff); }
     .btn-purple { background: linear-gradient(45deg, #8e2de2, #4a00e0); }
@@ -92,7 +110,10 @@
   <p>Environment: <span class="info-tag">${DEPLOY_ENV}</span></p>
   <p>Branch: <span class="info-tag">${GIT_BRANCH}</span></p>
   <p>Tag: <span class="info-tag">${TAG}</span></p>
-
+  <div class="workflow">
+  <h2>CI/CD Workflow Overview</h2>
+  <img src="assets/ci_cd_workflow.png" alt="Workflow Diagram" class="workflow-gif">
+  </div>
   <div class="button-group">
     <button class="btn btn-blue">View Logs</button>
     <button class="btn btn-purple">Deploy Now</button>
