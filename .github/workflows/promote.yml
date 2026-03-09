@@ -26,7 +26,7 @@ jobs:
         # 2. fetch-depth: 0 is required to see all branches for switching
         fetch-depth: 0
         repository: sureshkumar-devops/ecommerce-gitops
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITOPS_TOKEN }}
 
     - name: Promotion Logic
       run: |
