@@ -10,7 +10,11 @@ on:
         options:         
           - staging
           - prod
-          
+
+# 1. This block grants the necessary write permissions
+permissions:
+  contents: write  
+
 jobs:
   promote:
     runs-on: ubuntu-latest
@@ -19,6 +23,8 @@ jobs:
     - name: Checkout the Code
       uses: actions/checkout@v4
       with:
+        # 2. fetch-depth: 0 is required to see all branches for switching
+        fetch-depth: 0
         repository: sureshkumar-devops/ecommerce-gitops
         token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -58,11 +64,17 @@ jobs:
         sed -i "s/tag:.*/tag: \"$IMAGE_TAG\"/" environments/$DEST_ENV/values.yaml
         echo "Promoting $IMAGE_TAG from $SRC_ENV → $DEST_ENV"
 
-    - name: Commit Changes
+    - name: Commit and Push Changes
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
         git add environments
-        git commit -m "Promote image to ${{ github.event.inputs.target }}"
-        git push    
+
+        # 3. Only commit if there are actual changes to avoid errors
+        if git diff --staged --quiet; then
+           echo "No changes to commit"
+        else
+          git commit -m "Promote image to ${{ github.event.inputs.target }}"
+          git push origin HEAD
+        fi
+
