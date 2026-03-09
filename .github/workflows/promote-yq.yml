@@ -1,0 +1,62 @@
+name: Promote Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Promotion Target"
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod  
+
+jobs:
+  promote:
+   runs-on: ubuntu-latest
+
+   steps: 
+     - name: Checkout GitOps Repo  
+       uses: actions/checkout@v4
+       with:
+          repository: sureshkumar-devops/ecommerce-gitops
+          token: ${{  secrets.GITHUB_TOKEN  }}  
+
+     - name: Install yq
+       run: |
+         sudo apt-get update
+         sudo apt-get install -y yq
+
+     - name: Promote Image
+       run: |
+         if [ "${{ github.event.inputs.target }}" == "staging" ]; then
+             SRC_BRANCH == dev      
+             DEST_BRANCH == staging
+             SRC_ENV == dev
+             DEST_ENV == staging
+         else
+            SRC_BRANCH == staging
+            DEST_BRANCH == master
+            SRC_ENV == staging
+            DEST_ENV == prod
+         fi    
+         
+         IMAGE_TAG=$(yq '.image.tag' environments/$SRC_BRANCH/values.yaml)
+         
+         echo "Promoting $IMAGE_TAG from $SRC_BRANCH → $DEST_BRANCH"
+         
+         yq -i ".image.tag = \"$IMAGE_TAG\"" environments/$DEST_BRANCH/values.yaml
+
+     - name:  Commit Changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add environments
+          git commit -m "Promote image to ${{ github.event.inputs.target }}"
+          git push
+
+
+         
+
+
