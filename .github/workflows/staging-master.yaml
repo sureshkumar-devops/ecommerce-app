@@ -1,4 +1,4 @@
-name: Sync Branches AutoTrigger
+name: Sync Branches Staging-Master
 
 on:
  workflow_dispatch:
