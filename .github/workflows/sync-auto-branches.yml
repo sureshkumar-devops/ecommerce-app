@@ -1,4 +1,5 @@
 name: Sync Auto Branches
+
 on:
   workflow_call:
     inputs:
@@ -8,20 +9,18 @@ on:
        target:
         required: true   
         type: string
-         
-premissions:
-  contexts: write  
-
 jobs:
   sync: 
-  runs-on: ubuntu-latest
-
-  steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
     - name:  Checkout Repo
       uses: actions/checkout@v4
       with:
-          token: ${{ secrets.GITOPS_TOKEN }}
-          fetch-depth = 0
+        token: ${{ secrets.GITOPS_TOKEN }}
+        fetch-depth: 0        
     
     - name: Configure Git
       run: |
@@ -33,24 +32,23 @@ jobs:
          SRC=${{ inputs.source }}
          DEST=${{ inputs.target }}
 
-         echo "Merging $SRC → $DEST"
+          echo "Syncing $SRC  → into → $DEST using 'theirs' strategy"      
 
-         git fetch origin $SRC $DEST
-         git checkout $DEST
-         git merge origin/$SRC --no-edit || true
-         # git merge origin/$SRC --strategy-option theirs --no-edit
-         # Only push if there are changes
-         # if git diff --quiet origin/$DEST; then
+          git fetch origin $SRC $DEST
+          git checkout $DEST
 
-         if git diff --quiet; then
-           echo "No changes to push"
-         else
-           git push origin $DEST
-         fi
-
-
-
-
-  
+          # Use the "theirs" strategy to prioritize the incoming source branch
+          #  git merge origin/$SRC --no-edit || true
+         
+          git merge origin/$SRC --strategy-option theirs --no-edit
           
+          # Only push if there are changes
+          # if git diff --quiet; then
 
+          # Only push if the merge resulted in new commits
+          if git diff --quiet origin/$DEST; then         
+            echo "No changes to push"
+          else
+            git push origin $DEST
+          fi
+          
