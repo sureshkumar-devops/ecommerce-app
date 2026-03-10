@@ -39,7 +39,7 @@ jobs:
 
          echo "Merging $SRC → $DEST"
 
-         git fetch orign $SRC $DEST
+         git fetch origin $SRC $DEST
          git checkout $DEST
          git merge origin/$SRC  --no-edit || true
 
