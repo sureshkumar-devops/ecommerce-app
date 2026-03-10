@@ -37,11 +37,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
     
     - name: Promote Image
-      run: |
-       # SRC=${{ github.event.inputs.source }}
-       # DEST=${{ github.event.inputs.target }}
-       # SRC_ENV=${{ github.event.inputs.source }}
-       # DEST_ENV=${{ github.event.inputs.source }}
+      run: |       
        if [ "${{ github.event.inputs.target }}" == "staging" ]; then
            SRC_BRANCH="dev"
            DEST_BRANCH="staging"
