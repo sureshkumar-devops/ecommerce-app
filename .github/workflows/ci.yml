@@ -14,8 +14,12 @@ jobs:
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
         SHORT_SHA=${GITHUB_SHA::7}
-        echo "TAG=${SHORT_SHA}" >> $GITHUB_ENV
-        echo $GITHUB_ENV
+
+        # Define local variable first
+        TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
+        
+        # Save to GITHUB_ENV for FUTURE steps
+        echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
 
         # Set ENV for the HTML injection step
         if [ "$BRANCH_NAME" == "master" ]; then
@@ -23,6 +27,9 @@ jobs:
         else
            echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
         fi
+
+        # Use the local variable here!
+        echo "Final Tag created: ${TAG_VALUE}"
         
     - name: Display Bold Image Tag
       run: |
@@ -31,10 +38,13 @@ jobs:
         echo -e "BUILDING IMAGE: \033[1m${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}\033[0m"
         echo -e "---------------------------------------------------"    
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3   
+
     - name: Inject Environment Variables into HTML
       run: |
          export DEPLOY_ENV=$DEPLOY_TARGET
-         export GIT_BRANCH = "${{ github.ref_name }}"
+         export GIT_BRANCH="${{ github.ref_name }}"
          export TAG=$TAG
          # Point to the app/ directory
          envsubst < app/index.html > app/index.tmp.html && mv app/index.tmp.html app/index.html
@@ -46,7 +56,7 @@ jobs:
          password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and Push Docker Image        
-      uses: docker/build-push-actions@v6
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
@@ -62,7 +72,4 @@ jobs:
         echo -e "DOCKER IMAGE: \033[1;36m${{ vars.DOCKER_USERNAME }}/ecommerce-app\033[0m"
         echo -e "IMAGE TAG:    \033[1;32m${{ env.TAG }}\033[0m"
         echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"    
-
-
-
 

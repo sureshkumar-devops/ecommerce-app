@@ -1,0 +1,54 @@
+name: Sync Branches
+
+on:
+ workflow_dispatch:
+    inputs:
+      source:
+        description: "Source branch (dev or staging)"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      target:
+        description: "Target branch (staging or master)"
+        required: true
+        type: choice
+        options:
+         - staging
+         - master
+jobs:
+  sync:
+   runs-on: ubuntu-latest
+
+   steps:
+     - name: Checkout Repo
+       uses: actions/checkout@v4
+       with:
+         token: ${{ secrets.GITOPS_TOKEN }}
+
+     - name: Configure Git
+       run: |
+         git config user.name "github-actions[bot]"
+         git config user.email "github-actions[bot]@users.noreply.github.com"
+
+     - name: Merge Source → Target
+       run: |
+         SRC=${{ github.event.inputs.source }}
+         DEST=${{ github.event.inputs.target }}
+
+         echo "Merging $SRC → $DEST"
+
+         git fetch origin $SRC $DEST
+         git checkout $DEST
+         git merge origin/$SRC  --no-edit || true
+
+         # Only push if there are changes
+         if git diff --quiet; then
+            echo "No change to push"
+         else
+            git push origin $DEST
+         fi
+
+
+          
