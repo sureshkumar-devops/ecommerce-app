@@ -18,12 +18,11 @@ permissions:
   contents: write
 
 jobs:
-  promote Image:
-  runs-on: ubuntu-latest
-
-  steps: 
+  promote-image:
+   runs-on: ubuntu-latest
+   steps: 
     - name: Checkout Repo
-      uses: actions@checkout@v4
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITOPS_TOKEN }}
         fetch-depth: 0
@@ -35,8 +34,8 @@ jobs:
     
     - name: Promote Image
       run: |
-        SRC=${{ .github.event.inputs.source }}
-        DEST=${{ .github.event.inputs.target }}
+        SRC=${{ github.event.inputs.source }}
+        DEST=${{ github.event.inputs.target }}
 
         IMAGE_REPO=$(grep repository environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
         IMAGE_TAG=$(grep tag environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
