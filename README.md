@@ -137,4 +137,28 @@ ArgoCD Deploy
      ↓
 Promotion via PR
 
+🔹 Best Practice for Syncing Helm Charts & K8s Manifests
+1. 	Single Source of Truth for Templates
+2. 	Merge Dev → Staging → Master
+3. 	Promotion Workflow Handles Values
+4. 	Avoid Drift
+   
+
+🔹 Recommended Branch Strategy
+dev branch
+ ├─ Helm charts (latest)
+ ├─ k8s manifests (latest)
+ └─ values.yaml (auto-updated by Image Updater)
+
+staging branch
+ ├─ Helm charts (merged from dev)
+ ├─ k8s manifests (merged from dev)
+ └─ values.yaml (updated by promote.yml)
+
+master branch
+ ├─ Helm charts (merged from staging)
+ ├─ k8s manifests (merged from staging)
+ └─ values.yaml (updated by promote.yml)
+
+ 
 
