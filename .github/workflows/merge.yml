@@ -26,6 +26,7 @@ jobs:
        uses: actions/checkout@v4
        with:
          token: ${{ secrets.GITOPS_TOKEN }}
+         fetch-depth: 0  
 
      - name: Configure Git
        run: |
@@ -42,8 +43,11 @@ jobs:
          git fetch origin $SRC $DEST
          git checkout $DEST
          git merge origin/$SRC  --no-edit || true
+         # git merge origin/$SRC --strategy-option theirs --no-edit
 
          # Only push if there are changes
+         # if git diff --quiet origin/$DEST; then
+
          if git diff --quiet; then
             echo "No change to push"
          else
