@@ -1,0 +1,56 @@
+name: Sync Auto Branches
+on:
+  workflow_call:
+    inputs:
+       source: 
+        required: true
+        type: string
+       target:
+        required: true   
+        type: string
+         
+premissions:
+  contexts: write  
+
+jobs:
+  sync: 
+  runs-on: ubuntu-latest
+
+  steps:
+    - name:  Checkout Repo
+      uses: actions/checkout@v4
+      with:
+          token: ${{ secrets.GITOPS_TOKEN }}
+          fetch-depth = 0
+    
+    - name: Configure Git
+      run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Merge Source → Target
+      run: |
+         SRC=${{ inputs.source }}
+         DEST=${{ inputs.target }}
+
+         echo "Merging $SRC → $DEST"
+
+         git fetch origin $SRC $DEST
+         git checkout $DEST
+         git merge origin/$SRC --no-edit || true
+         # git merge origin/$SRC --strategy-option theirs --no-edit
+         # Only push if there are changes
+         # if git diff --quiet origin/$DEST; then
+
+         if git diff --quiet; then
+           echo "No changes to push"
+         else
+           git push origin $DEST
+         fi
+
+
+
+
+  
+          
+

@@ -1,0 +1,72 @@
+name: Promote Auto Image
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Source environment (dev)"
+        required: true
+        default: dev
+      target:
+        description: "Target environment (staging or prod)"
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
+
+permissions:
+  contents: write
+
+jobs:
+  promote Image:
+  runs-on: ubuntu-latest
+
+  steps: 
+    - name: Checkout Repo
+      uses: actions@checkout@v4
+      with:
+        token: ${{ secrets.GITOPS_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Configure Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+    
+    - name: Promote Image
+      run: |
+        SRC=${{ .github.event.inputs.source }}
+        DEST=${{ .github.event.inputs.target }}
+
+        IMAGE_REPO=$(grep repository environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
+        IMAGE_TAG=$(grep tag environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
+
+        echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"
+
+        sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST/values.yaml
+        sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST/values.yaml
+
+        git add environments/$DEST/values.yaml
+        git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST" || echo "No changes"
+        git push origin HEAD
+
+  sync:
+    uses: ./.github/workflows/sync-auto-branches.yml
+    with:
+      source: ${{ github.event.inputs.source }}
+      target: ${{ github.event.inputs.target }}  
+
+
+  
+
+
+
+
+
+     
+        
+     
+            
+        
+          
+
