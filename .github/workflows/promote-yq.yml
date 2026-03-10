@@ -30,15 +30,15 @@ jobs:
      - name: Promote Image
        run: |
          if [ "${{ github.event.inputs.target }}" == "staging" ]; then
-             SRC_BRANCH == dev      
-             DEST_BRANCH == staging
-             SRC_ENV == dev
-             DEST_ENV == staging
+             SRC_BRANCH = dev      
+             DEST_BRANCH = staging
+             SRC_ENV = dev
+             DEST_ENV = staging
          else
-            SRC_BRANCH == staging
-            DEST_BRANCH == master
-            SRC_ENV == staging
-            DEST_ENV == prod
+            SRC_BRANCH = staging
+            DEST_BRANCH = master
+            SRC_ENV = staging
+            DEST_ENV = prod
          fi    
          
          IMAGE_TAG=$(yq '.image.tag' environments/$SRC_BRANCH/values.yaml)
