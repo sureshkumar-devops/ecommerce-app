@@ -27,6 +27,7 @@ jobs:
         else
            echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
         fi
+
         # Use the local variable here!
         echo "Final Tag created: ${TAG_VALUE}"
         
@@ -35,7 +36,7 @@ jobs:
         # This will show the full path clearly in the logs
         echo -e "---------------------------------------------------"
         echo -e "BUILDING IMAGE: \033[1m${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}\033[0m"
-        echo -e "---------------------------------------------------"   
+        echo -e "---------------------------------------------------"    
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3   
@@ -70,4 +71,5 @@ jobs:
         # \033[1;32m is Bold Green | \033[1;36m is Bold Cyan | \033[0m is Reset
         echo -e "DOCKER IMAGE: \033[1;36m${{ vars.DOCKER_USERNAME }}/ecommerce-app\033[0m"
         echo -e "IMAGE TAG:    \033[1;32m${{ env.TAG }}\033[0m"
-        echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"
+        echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"    
+
