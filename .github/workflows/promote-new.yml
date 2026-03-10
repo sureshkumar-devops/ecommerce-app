@@ -1,0 +1,55 @@
+name: Promote Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Promote to staging or prod"
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          repository: sureshkumar-devops/ecommerce-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          cd gitops
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Promote Image
+        run: |
+          cd gitops
+          git fetch origin
+          git checkout dev
+
+          IMAGE_REPO=$(grep repository environments/dev/values.yaml | awk '{print $2}' | tr -d '"')
+          IMAGE_TAG=$(grep tag environments/dev/values.yaml | awk '{print $2}' | tr -d '"')
+
+          if [ "${{ github.event.inputs.target }}" == "staging" ]; then
+            DEST_BRANCH="staging"
+            DEST_ENV="staging"
+          else
+            DEST_BRANCH="master"
+            DEST_ENV="prod"
+          fi
+
+          git checkout $DEST_BRANCH
+          sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST_ENV/values.yaml
+          sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST_ENV/values.yaml
+
+          git add environments/$DEST_ENV/values.yaml
+          git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG → $DEST_ENV" || echo "No changes"
+          git push origin HEAD
