@@ -6,17 +6,17 @@ on:
       source:
         description: "Source branch (dev or staging)"
         required: true
-        type: choice
-        options:
-          - dev
-          - staging
+          #type: choice
+          #options:
+          #   - dev
+          #   - staging
       target:
         description: "Target branch (staging or master)"
         required: true
-        type: choice
-        options:
-         - staging
-         - master
+          #type: choice
+          #options:
+          #   - staging
+          #   - master
 jobs:
   sync:
    runs-on: ubuntu-latest

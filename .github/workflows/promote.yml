@@ -77,4 +77,18 @@ jobs:
           git commit -m "Promote image to ${{ github.event.inputs.target }}"
           git push origin HEAD
         fi
+     
+    - name: Trigger Branch Sync
+      uses: peter-evans/workflow-dispatch@v2     
+      with:
+       token: ${{ secrets.GITOPS_TOKEN }}
+       repository: sureshkumar-devops/ecommerce-gitops
+       fetch: 0
+       workflow: merge.yml
+       ref: ${{ github.ref }}  
+       inputs:
+          source=${{ github.event.inputs.target == 'staging' && 'dev' || 'staging' }}  
+          target=${{ github.evnet.inputs.target }}
+
+
 
