@@ -1,4 +1,4 @@
-name: Sync Branches-manual
+name: Sync Branches Manual
 
 on:
  workflow_dispatch:
