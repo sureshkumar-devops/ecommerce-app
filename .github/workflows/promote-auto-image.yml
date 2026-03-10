@@ -26,16 +26,9 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: sureshkumar-devops/ecommerce-gitops
-        token: ${{ secrets.GITOPS_TOKEN }}
-        path: gitops
-        fetch-depth: 0
-      
-    - name: Configure Git
-      run: |
-        cd gitops
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-    
+        token: ${{ secrets.GITOPS_TOKEN }}       
+        fetch-depth: 0      
+  
     - name: Promote Image
       run: |       
        if [ "${{ github.event.inputs.target }}" == "staging" ]; then
@@ -54,8 +47,7 @@ jobs:
        echo "Destination Branch: $DEST_BRANCH" 
        echo "Source Environment: $SRC_ENV"
        echo "Destination Environment: $DEST_ENV"
-         
-       cd gitops
+           
        git fetch origin      
 
        # Read tag from SOURCE branch
@@ -78,13 +70,19 @@ jobs:
        echo "Promoting $IMAGE_REPO from $SRC_ENV → $DEST_ENV"
        echo "Promoting $IMAGE_TAG from $SRC_ENV → $DEST_ENV"
 
-       git add environments/$DEST/values.yaml
-       if git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"; then
-           git push origin HEAD
-       else
-           echo "No changes detected in values.yaml"
-       fi
-          
+    - name: Configure Git and Commit and Push Changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add environments/$DEST/values.yaml
+
+        if git diff --staged --quiet; then
+           echo "No changes to commit"
+        else
+          git commit -m "Promote image to ${{ github.event.inputs.target }}"
+          git push origin HEAD
+        fi       
+                 
   # Call the reusable sync workflow after the image is promoted      
   sync-branches:
     needs: promote-image
