@@ -46,14 +46,21 @@ jobs:
         sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST/values.yaml
 
         git add environments/$DEST/values.yaml
-        git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST" || echo "No changes"
-        git push origin HEAD
-
-  sync:
+        if git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"; then
+            git push origin HEAD
+        else
+            echo "No changes detected in values.yaml"
+        fi
+        
+  # Call the reusable sync workflow after the image is promoted      
+  sync-branches:
+    needs: promote-image
     uses: ./.github/workflows/sync-auto-branches.yml
     with:
       source: ${{ github.event.inputs.source }}
       target: ${{ github.event.inputs.target }}  
+    secrets: inherit # Pass the GITOPS_TOKEN to the called workflow
+  
 
 
   
