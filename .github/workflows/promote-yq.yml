@@ -1,4 +1,4 @@
-name: Promote Image
+name: Promote Image -yq
 
 on:
   workflow_dispatch:
