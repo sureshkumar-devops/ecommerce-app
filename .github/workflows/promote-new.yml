@@ -54,8 +54,9 @@ jobs:
 
           git checkout $DEST_BRANCH
           sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST_ENV/values.yaml
-          sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST_ENV/values.yaml
-
+          #sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST_ENV/values.yaml
+          sed -i "s/tag:.*/tag: $IMAGE_TAG/" environments/$DEST_ENV/values.yaml
+          echo "Promoting $IMAGE_TAG from $SRC_ENV → $DEST_ENV"          
           git add environments/$DEST_ENV/values.yaml
           git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG → $DEST_ENV" || echo "No changes"
           git push origin HEAD
