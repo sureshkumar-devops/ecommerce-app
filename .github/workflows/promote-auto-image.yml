@@ -24,9 +24,11 @@ jobs:
     - name: Checkout Repo
       uses: actions/checkout@v4
       with:
+        repository: sureshkumar-devops/ecommerce-gitops
         token: ${{ secrets.GITOPS_TOKEN }}
+        path: gitops
         fetch-depth: 0
-    
+      
     - name: Configure Git
       run: |
         git config user.name "github-actions[bot]"
@@ -34,24 +36,57 @@ jobs:
     
     - name: Promote Image
       run: |
-        SRC=${{ github.event.inputs.source }}
-        DEST=${{ github.event.inputs.target }}
-
-        IMAGE_REPO=$(grep repository environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
-        IMAGE_TAG=$(grep tag environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
-
-        echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"
-
-        sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST/values.yaml
-        sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST/values.yaml
-
-        git add environments/$DEST/values.yaml
-        if git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"; then
-            git push origin HEAD
+       # SRC=${{ github.event.inputs.source }}
+       # DEST=${{ github.event.inputs.target }}
+       # SRC_ENV=${{ github.event.inputs.source }}
+       # DEST_ENV=${{ github.event.inputs.source }}
+               if [ "${{ github.event.inputs.target }}" == "staging" ]; then
+           SRC_BRANCH="dev"
+           DEST_BRANCH="staging"
+           SRC_ENV="dev"
+           DEST_ENV="staging"
         else
-            echo "No changes detected in values.yaml"
+           SRC_BRANCH="staging"
+           DEST_BRANCH="master"                      
+           SRC_ENV="staging"
+           DEST_ENV="prod"
         fi
+          
+          echo "Source Branch: $SRC_BRANCH"
+          echo "Destination Branch: $DEST_BRANCH" 
+          
+          echo "Source Environment: $SRC_ENV"
+          echo "Destination Environment: $DEST_ENV"
+
+          git fetch origin      
+
+          # Read tag from SOURCE branch
+          git checkout origin/$SRC_BRANCH
         
+          IMAGE_REPO=$(grep repository environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
+          IMAGE_TAG=$(grep tag environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')          
+
+          echo "Found Image Tag: $IMAGE_TAG"
+          echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"
+
+          # Switch to destination branch
+          git checkout $DEST_BRANCH
+
+          # Update destination env file 
+          sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST/values.yaml
+          sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST/values.yaml          
+          #sed -i "s/tag:.*/tag: $IMAGE_TAG/" environments/$DEST_ENV/values.yaml
+
+          echo "Promoting $IMAGE_REPO from $SRC_ENV → $DEST_ENV"
+          echo "Promoting $IMAGE_TAG from $SRC_ENV → $DEST_ENV"
+
+          git add environments/$DEST/values.yaml
+          if git commit -m "Promote $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"; then
+             git push origin HEAD
+          else
+             echo "No changes detected in values.yaml"
+          fi
+          
   # Call the reusable sync workflow after the image is promoted      
   sync-branches:
     needs: promote-image
