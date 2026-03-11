@@ -4,6 +4,7 @@ on:
     branches:
       - dev
     paths-ignore:
+      - '!**'              # Include all files
       - 'environments/**'
 
 permissions:
