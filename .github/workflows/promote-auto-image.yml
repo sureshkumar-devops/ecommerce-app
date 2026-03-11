@@ -27,6 +27,7 @@ jobs:
       with:
         repository: sureshkumar-devops/ecommerce-gitops
         token: ${{ secrets.GITOPS_TOKEN }}           
+        ref: dev
         fetch-depth: 0      
   
     - name: Promote Image
