@@ -54,18 +54,18 @@ jobs:
        # Read tag from SOURCE branch
        git checkout origin/$SRC_BRANCH
         
-       IMAGE_REPO=$(grep repository environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')
-       IMAGE_TAG=$(grep tag environments/$SRC/values.yaml | awk '{print $2}' | tr -d '"')          
+       IMAGE_REPO=$(grep repository environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d '"')
+       IMAGE_TAG=$(grep tag environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d '"')          
 
        echo "Found Image Tag: $IMAGE_TAG"
-       echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC → $DEST"
+       echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC_ENV → $DEST_ENV"
 
        # Switch to destination branch
        git checkout $DEST_BRANCH
 
        # Update destination values.yaml
-       sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST/values.yaml
-       sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST/values.yaml          
+       sed -i "s|repository:.*|repository: $IMAGE_REPO|" environments/$DEST_ENV/values.yaml
+       sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|" environments/$DEST_ENV/values.yaml          
        #sed -i "s/tag:.*/tag: $IMAGE_TAG/" environments/$DEST_ENV/values.yaml
 
        echo "Promoting $IMAGE_REPO from $SRC_ENV → $DEST_ENV"
@@ -75,12 +75,12 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add environments/$DEST/values.yaml
+        git add environments/$DEST_ENV/values.yaml
 
         if git diff --staged --quiet; then
            echo "No changes to commit"
         else
-          git commit -m "Promote image to ${{ github.event.inputs.target }}"
+          git commit -m "DevPromote image to ${{ github.event.inputs.target }}"
           git push origin HEAD
         fi       
                  
