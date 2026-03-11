@@ -48,6 +48,9 @@ jobs:
        echo "Source Environment: $SRC_ENV"
        echo "Destination Environment: $DEST_ENV"
 
+       # SAVE TO GITHUB_ENV so the next step can see them
+       echo "DEST_ENV=$DEST_ENV" >> $GITHUB_ENV
+       echo "DEST_BRANCH=$DEST_BRANCH" >> $GITHUB_ENV 
        
        git fetch origin      
 
@@ -74,12 +77,14 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # $DEST_ENV is now available here
         git add environments/$DEST_ENV/values.yaml
 
         if git diff --staged --quiet; then
            echo "No changes to commit"
         else
           git commit -m "DevPromote image to ${{ github.event.inputs.target }}"
-          git push origin HEAD
+          git push origin HEAD:$DEST_BRANCH
         fi       
                  
