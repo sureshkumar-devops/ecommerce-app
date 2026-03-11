@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   sync-gitops-repo:
-     runs-on: ubuntu
+     runs-on: ubuntu-latest
      
      steps:
      - name: Checkout GitOps Repo
