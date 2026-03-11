@@ -3,9 +3,10 @@ on:
   push:
     branches:
       - dev
-    paths-ignore:
-      - 'environments/**'
-
+    paths:
+      - '**'              # Include all files
+      - '!environments/**' # EXCLUDE the environments folder
+      
 permissions:
   contents: write
 
