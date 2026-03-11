@@ -1,11 +1,12 @@
 name: Sync Dev to Master and Staging
 on:
-  push:
-    branches:
-      - dev
-    paths-ignore:
-      - '!**'              # Include all files
-      - 'environments/**'
+  workflow_dispatch:
+    inputs:
+       source:
+         description: "source branch"
+         required: true
+         type: string
+         default: "dev"
 
 permissions:
   contents: write
@@ -22,15 +23,19 @@ jobs:
          token: ${{ secrets.GITOPS_TOKEN }}   
          fetch-depth: 0
 
-     - name: Dry Run and Force Overwrite 
+     - name: Configure Git 
        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+     - name: Execute Sync Logic     
+       run: |
           # 1. Fetch ALL branches and prune deleted ones
           git fetch --all --prune
           
           TARGETS=("staging" "master")         
+          SOURCE="${{ github.event.inputs.source }}"
+
           for BRANCH in "${TARGETS[@]}"; do
             echo "==================================="    
             echo "🔍 PREVIEWING CHANGES FOR: $BRANCH "
@@ -49,14 +54,15 @@ jobs:
 
             # 5. Check for changes, commit, and push            
             if ! git diff --staged --quiet; then
-               echo "The following changes will be pushed to $BRANCH:"
+               echo "Found changes (excluding environments/). Pushing to $BRANCH..."
                git diff --staged --stat
 
                # COMMIT AND PUSH
-               git commit -m "Force sync from dev (Preserved environments/)"
+               git commit -m "Manual sync from $SOURCE (Preserved $BRANCH environments/)"
                git push origin $BRANCH
                echo "✅ $BRANCH updated successfully."
             else
-               echo "ℹ️ $BRANCH already matches up-to-date with dev. No changes to push."               
+               echo "ℹ️ $BRANCH already matches up-to-date with dev. No changes to push." 
+               echo "✨ $BRANCH is already in sync. No changes found."              
             fi            
           done
