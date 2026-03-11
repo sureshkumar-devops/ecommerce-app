@@ -1,0 +1,57 @@
+name: Sync Dev to Master and Staging
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'environments/**'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-gitops-repo:
+     runs-on: ubuntu
+     
+     steps:
+     - name: Checkout GitOps Repo
+       uses: actions/checkout@v5
+       with:
+         repository: sureshkumar-devops/ecommerce-gitops         
+         token: ${{ secrets.GITOPS_TOKEN }}   
+         fetch-depth: 0
+
+     - name: Dry Run and Force Overwrite 
+       run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TARGETS=("staging" "master")         
+          for BRANCH in "${TARGETS[@]}"; do
+            echo "==================================="    
+            echo "🔍 PREVIEWING CHANGES FOR: $BRANCH "
+            echo "==================================="
+
+            #Switch to target
+
+            git checkout $BRANCH
+            git pull origin $BRANCH
+
+            # Force overwrite everything with dev contents
+            git checkout dev -- .
+
+            # Restore the environment-specific values.yaml
+            git checkout HEAD -- environments/
+
+            # DRY RUN: Show the difference
+            if ! git diff --staged --quiet; then
+               echo "The following changes will be pushed to $BRANCH:"
+               git diff --staged --stat
+
+               # COMMIT AND PUSH
+               git commit -m "Force sync from dev (Preserved environments/)"
+               git push origin $BRANCH
+               echo "✅ $BRANCH updated successfully."
+            else
+               echo "ℹ️ $BRANCH already matches dev. No changes to push."
+            fi            
+          done
