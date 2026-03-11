@@ -1,10 +1,10 @@
 name: build and push
 on:
   push:
+     branches:
+      - dev
      paths:
-      - '! .github/workflows/ci.yaml' # DO NOT run if this specific file changes      
-    #branches:
-     # - dev
+      - 'app/**'  # Only files inside this folder trigger the run 
 jobs:
   build:
     runs-on: ubuntu-latest
