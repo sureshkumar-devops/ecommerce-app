@@ -39,8 +39,8 @@ jobs:
             git checkout $BRANCH
             git reset --hard origin/$BRANCH
 
-            # 3. Force overwrite content from origin/dev contents            
-            git checkout dev -- .
+            # 3. FORCE OVERWRITE using the remote reference 'origin/dev'
+            git checkout origin/dev -- .
 
             # 4. Restore the environment-specific values.yaml
             # This keeps your specific image tags for that environment
