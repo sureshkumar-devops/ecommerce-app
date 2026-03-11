@@ -20,14 +20,18 @@ permissions:
 jobs:
   promote-image:
    runs-on: ubuntu-latest
+
+   # This line prevents the workflow from running on any branch EXCEPT dev
+   if: github.ref == 'refs/heads/dev'
    
    steps: 
     - name: Checkout GitOps Repo
       uses: actions/checkout@v5
       with:
         repository: sureshkumar-devops/ecommerce-gitops
-        token: ${{ secrets.GITOPS_TOKEN }}           
-        
+        token: ${{ secrets.GITOPS_TOKEN }}  
+        ref: dev # Forces workflow to run using dev branch files
+        fetch-depth: 0              
   
     - name: Promote Image
       run: |       
