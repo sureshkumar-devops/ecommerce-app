@@ -11,11 +11,14 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.set-tag.outputs.TAG }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
      
     - name: Set Image Tag
+      id: set-tag
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
         SHORT_SHA=${GITHUB_SHA::7}         
@@ -26,6 +29,7 @@ jobs:
         # Save to GITHUB_ENV for FUTURE steps
         echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
         echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+        echo "TAG=${TAG_VALUE}" >> $GITHUB_OUTPUT
         
         # Set ENV for the HTML injection step
         if [ "$BRANCH_NAME" == "master" ]; then
