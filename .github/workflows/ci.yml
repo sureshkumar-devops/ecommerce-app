@@ -96,7 +96,7 @@ jobs:
     with:
       repository: "ecommerce-app"
       keep_last: 2
-      tag_patterns: "dev- stag- v1.2.0-"
+      tag_patterns: "dev- stag- v[0-9]+\\.[0-9]+\\.[0-9]+-"
     secrets:
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}   
