@@ -36,7 +36,17 @@ jobs:
         uses: azure/k8s-set-context@v3
         with:
           method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+          # This decodes the secret on the fly before passing it to the action
+          kubeconfig: ${{ secrets.KUBECONFIG }} 
+        env:
+          # If the action fails to auto-decode, use this shell trick:
+          KUBECONFIG_TEMP: ${{ secrets.KUBECONFIG }}
+
+      # If Option 1 and the above fail, use this manual fallback:
+      - name: Manual Kubeconfig Setup
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ./kubeconfig
+          echo "KUBECONFIG=$PWD/kubeconfig" >> $GITHUB_ENV
 
       - name: Verify Rollout Status
         run: |
