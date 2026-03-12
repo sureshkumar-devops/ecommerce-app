@@ -1,0 +1,43 @@
+name: Reusable Rollout Verification
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        description: "Kubernetes Deployment name (e.g., dev-my-app)"
+        required: true
+        type: string
+      namespace:
+        description: "Kubernetes namespace (default: argocd)"
+        required: false
+        default: "argocd"
+        type: string
+      timeout:
+        description: "Timeout in seconds for rollout check"
+        required: false
+        default: 120
+        type: number
+    secrets:
+      KUBECONFIG:
+        description: "Base64 encoded kubeconfig for the cluster"
+        required: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Configure Kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+
+      - name: Verify Rollout Status
+        run: |
+          echo "🔍 Checking rollout status for ${{ inputs.app_name }} in namespace ${{ inputs.namespace }}..."
+          kubectl rollout status deployment/${{ inputs.app_name }} -n ${{ inputs.namespace }} --timeout=${{ inputs.timeout }}s
+          
