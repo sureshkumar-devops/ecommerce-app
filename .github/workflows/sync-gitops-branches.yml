@@ -1,6 +1,5 @@
 name: Sync Dev to Master and Staging
 on:
-<<<<<<< HEAD
   workflow_dispatch:
     inputs:
        source:
@@ -8,16 +7,6 @@ on:
          required: true
          type: string
          default: "dev"
-
-=======
-  push:
-    branches:
-      - dev
-    paths:
-      - '!**'              # Include all files
-      - '!environments/**' # EXCLUDE the environments folder
-      
->>>>>>> 0d43b01 (Update sync-gitops-branches.yml)
 permissions:
   contents: write
 
