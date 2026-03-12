@@ -90,23 +90,18 @@ jobs:
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
 
-  cleanup-dockerhub:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Docker Hub Cleanup
-        uses: onuryatmaz/docker-hub-cleanup@v1
-        with:
-          username: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: ecommerce-app
-          # Keep the 3 newest for each pattern
-          tags: |
-            dev-.*
-            stag-.*
-            v[0-9]+\.[0-9]+\.[0-9]+-.*
-          keep_last: 2       
+  cleanup:
+    needs: build # Wait for the new image push to finish
+    uses: sureshkumar-devops/ecommerce-gitops/.github/workflows/docker-cleanup.yml@dev
+    with:
+      repository: "ecommerce-app"
+      keep_last: 2
+      tag_patterns: "dev- stag- v1.2.0-"
+    secrets:
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}   
       
     
   
   
+
