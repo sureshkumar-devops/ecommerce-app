@@ -91,7 +91,7 @@ jobs:
     uses: sureshkumar-devops/ecommerce-gitops/.github/workflows/sync-gitops-branches.yaml@dev
     with:
       branch: ${{ github.ref_name }}
-      commitMessage: "[ImageUpdater] ${{ github.ref_name }} → ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}"
+      commitMessage: "[ImageUpdater] ${{ github.ref_name }} → ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ needs.build.outputs.tag }}"
       
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
