@@ -79,16 +79,46 @@ jobs:
 
     - name: Configure Git and Commit and Push Changes
       run: |
+        # 1. Setup Git User
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-        # $DEST_ENV is now available here
-        git add environments/$DEST_ENV/values.yaml
+        # 2. Stage only the specific environment file
+        git add environments/${{ env.DEST_ENV }}/values.yaml
 
-        if git diff --staged --quiet; then
-           echo "No changes to commit"
+        # 3. Check for staged changes
+        if git diff --cached --quiet; then
+           echo "✨ No changes to commit for ${{ env.DEST_ENV }}"
         else
-          git commit -m "DevPromote image to ${{ github.event.inputs.target }}"
-          git push origin HEAD:$DEST_BRANCH
-        fi       
-                 
+           # 4. Commit locally
+           git commit -m "🚀 DevPromote image to ${{ github.event.inputs.target }}"
+           
+           # 5. REBASE: Pull the latest changes from the remote branch first
+           # This avoids "non-fast-forward" errors if the remote has moved
+           git pull --rebase origin ${{ env.DEST_BRANCH }}
+           
+           # 6. Push the local HEAD to the remote branch
+           git push origin HEAD:${{ env.DEST_BRANCH }}
+           
+           echo "✅ Successfully synced ${{ env.DEST_ENV }} to ${{ env.DEST_BRANCH }}"
+        fi
+
+       #- name: Configure Git and Commit and Push Changes
+#      run: |
+        # 1. Setup Git User
+#        git config user.name "github-actions[bot]"
+#        git config user.email "github-actions[bot]@users.noreply.github.com"
+        # 2. Stage only the specific environment file
+        # This ensures we don't accidentally commit other local changes
+#        git add environments/${{ env.DEST_ENV }}/values.yaml
+        # 3. Check for staged changes (--cached is same as --staged)
+#        if git diff --cached --quiet; then
+#           echo "✨ No changes to commit for ${{ env.DEST_ENV }}"
+#        else
+           # 4. Commit and Push
+#           git commit -m "🚀 DevPromote image to ${{ github.event.inputs.target }}"
+           # Using origin HEAD:${{ env.DEST_BRANCH }} is a great practice
+           # It maps your current local commit directly to the remote branch
+#           git push origin HEAD:${{ env.DEST_BRANCH }}
+#         echo "✅ Successfully synced ${{ env.DEST_ENV }} to ${{ env.DEST_BRANCH }}"
+#        fi            
