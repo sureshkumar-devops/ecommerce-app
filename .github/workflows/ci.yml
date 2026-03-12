@@ -18,14 +18,15 @@ jobs:
     - name: Set Image Tag
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
-        SHORT_SHA=${GITHUB_SHA::7}
-
+        SHORT_SHA=${GITHUB_SHA::7}         
+        
         # Define local variable first
         TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
         
         # Save to GITHUB_ENV for FUTURE steps
         echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
-
+        echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+        
         # Set ENV for the HTML injection step
         if [ "$BRANCH_NAME" == "master" ]; then
            echo "DEPLOY_TARGET=prod" >> $GITHUB_ENV;
@@ -66,7 +67,10 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
+        tags: |
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v1.2.0-${{ env.SHORT_SHA }}
 
     - name: Display Full Image Details
       run: |
