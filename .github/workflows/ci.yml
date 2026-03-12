@@ -5,6 +5,9 @@ on:
       - dev
      paths:
       - 'app/**'  # Only files inside this folder trigger the run 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Add this line here
+  
 jobs:
   build:
     runs-on: ubuntu-latest
