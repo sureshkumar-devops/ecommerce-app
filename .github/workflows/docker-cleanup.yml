@@ -1,0 +1,48 @@
+name: Docker Hub Cleanup
+on:
+  workflow_call:
+    secrets:
+      DOCKER_USERNAME: { required: true }
+      DOCKER_PASSWORD: { required: true }
+  # Optional: Also run every Sunday at midnight to catch old images
+# schedule:
+ #  - cron: '0 0 * * 0'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Cleanup Dev Tags (Keep 3 OR delete if older than 30 days)
+      - name: Cleanup Dev Tags
+        uses: vitorsalgado/delete-image-action@v1
+        with:
+          user: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ecommerce-app
+          filter: "^dev-.*"
+          keep_last: 2
+          # This logic ensures even if you have fewer than 3, 
+          # they get deleted if they are very old
+         # before: 30d 
+
+      # 2. Cleanup Staging Tags
+      - name: Cleanup Staging Tags
+        uses: vitorsalgado/delete-image-action@v1
+        with:
+          user: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ecommerce-app
+          filter: "^stag-.*"
+          keep_last: 2
+        #  before: 30d
+
+      # 3. Cleanup Prod Tags
+      - name: Cleanup Prod Tags
+        uses: vitorsalgado/delete-image-action@v1
+        with:
+          user: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ecommerce-app
+          filter: "^v[0-9]+\\.[0-9]+\\.[0-9]+-.*"
+          keep_last: 2
+        #  before: 30d
