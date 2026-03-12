@@ -69,8 +69,8 @@ jobs:
         push: true
         tags: |
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
-          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}
-          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v1.2.0-${{ env.SHORT_SHA }}
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}          
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v$(date +'%Y.%m.%d')-${{ env.SHORT_SHA }}
 
     - name: Display Full Image Details
       run: |
