@@ -82,6 +82,13 @@ jobs:
       branch: ${{ github.ref_name }}
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+
+  docker-cleanup:
+    needs: build
+    uses: ./.github/workflows/docker-cleanup.yml
+    secrets:
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}        
       
     
   
