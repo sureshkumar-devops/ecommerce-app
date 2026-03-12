@@ -74,4 +74,16 @@ jobs:
         echo -e "DOCKER IMAGE: \033[1;36m${{ vars.DOCKER_USERNAME }}/ecommerce-app\033[0m"
         echo -e "IMAGE TAG:    \033[1;32m${{ env.TAG }}\033[0m"
         echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"    
+        
+  sync-gitops:
+    needs: build
+    uses: sureshkumar-devops/ecommerce-gitops/.github/workflows/sync-gitops-branches.yaml@dev
+    with:
+      branch: ${{ github.ref_name }}
+    secrets:
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+      
+    
+  
+  
 
