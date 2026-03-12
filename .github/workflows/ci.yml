@@ -83,12 +83,120 @@ jobs:
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
 
-  docker-cleanup:
+name: build and push
+on:
+  push:
+     branches:
+      - dev
+     paths:
+      - 'app/**'  # Only files inside this folder trigger the run 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Add this line here
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+     
+    - name: Set Image Tag
+      run: |
+        BRANCH_NAME=${GITHUB_REF##*/}
+        SHORT_SHA=${GITHUB_SHA::7}         
+        
+        # Define local variable first
+        TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
+        
+        # Save to GITHUB_ENV for FUTURE steps
+        echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
+        echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+        
+        # Set ENV for the HTML injection step
+        if [ "$BRANCH_NAME" == "master" ]; then
+           echo "DEPLOY_TARGET=prod" >> $GITHUB_ENV;
+        else
+           echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
+        fi
+
+        # Use the local variable here!
+        echo "Final Tag created: ${TAG_VALUE}"
+        
+    - name: Display Bold Image Tag
+      run: |
+        # This will show the full path clearly in the logs
+        echo -e "---------------------------------------------------"
+        echo -e "BUILDING IMAGE: \033[1m${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}\033[0m"
+        echo -e "---------------------------------------------------"    
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3   
+
+    - name: Inject Environment Variables into HTML
+      run: |
+         export DEPLOY_ENV=$DEPLOY_TARGET
+         export GIT_BRANCH="${{ github.ref_name }}"
+         export TAG=$TAG
+         # Point to the app/ directory
+         envsubst < app/index.html > app/index.tmp.html && mv app/index.tmp.html app/index.html
+
+    - name: Login Docker Hub
+      uses: docker/login-action@v3
+      with:
+         username: ${{ secrets.DOCKER_USERNAME }}
+         password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker Image        
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: |
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v1.2.0-${{ env.SHORT_SHA }}
+
+    - name: Display Full Image Details
+      run: |
+        # Construct the full image name
+        FULL_IMAGE="${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}"
+        
+        # \033[1;32m is Bold Green | \033[1;36m is Bold Cyan | \033[0m is Reset
+        echo -e "DOCKER IMAGE: \033[1;36m${{ vars.DOCKER_USERNAME }}/ecommerce-app\033[0m"
+        echo -e "IMAGE TAG:    \033[1;32m${{ env.TAG }}\033[0m"
+        echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"    
+        
+  sync-gitops:
     needs: build
-    uses: ./.github/workflows/docker-cleanup.yml
+    uses: sureshkumar-devops/ecommerce-gitops/.github/workflows/sync-gitops-branches.yaml@dev
+    with:
+      branch: ${{ github.ref_name }}
     secrets:
-      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}        
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+
+  cleanup-dockerhub:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Hub Cleanup
+        uses: onuryatmaz/docker-hub-cleanup@v1
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ecommerce-app
+          # Keep the 3 newest for each pattern
+          tags: |
+            dev-.*
+            stag-.*
+            v[0-9]+\.[0-9]+\.[0-9]+-.*
+          keep_last: 2       
+      
+    
+  
+  
+
+       
       
     
   
