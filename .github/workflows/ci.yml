@@ -92,7 +92,7 @@ jobs:
 
   cleanup:
     needs: build # Wait for the new image push to finish
-    uses: sureshkumar-devops/ecommerce-gitops/.github/workflows/docker-cleanup.yml@dev
+    uses: sureshkumar-devops/ecommerce-apps/.github/workflows/docker-cleanup.yml@dev
     with:
       repository: "ecommerce-app"
       keep_last: 2
