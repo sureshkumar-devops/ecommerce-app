@@ -1,12 +1,11 @@
 name: Sync Auto Branches
-
 on:
   workflow_call:
     inputs:
-       source: 
+      source: 
         required: true
         type: string
-       target:
+      target:
         required: true   
         type: string
 jobs:
