@@ -21,8 +21,10 @@ jobs:
       id: set-tag
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
+
         SHORT_SHA=${GITHUB_SHA::7}        
         CURRENT_DATE=$(date +'%Y.%m.%d') # Generate the date here
+
         
         # Define local variable first
         TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
@@ -30,6 +32,7 @@ jobs:
         # Save to GITHUB_ENV for FUTURE steps
         echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
         echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+
         echo "TAG=${TAG_VALUE}" >> $GITHUB_OUTPUT
         echo "BUILD_DATE=${CURRENT_DATE}" >> $GITHUB_ENV # Save it for later
         
@@ -77,7 +80,7 @@ jobs:
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}                    
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v${{ env.BUILD_DATE }}-${{ env.SHORT_SHA }}
-
+          
     - name: Display Full Image Details
       run: |
         # Construct the full image name
@@ -94,7 +97,6 @@ jobs:
     with:
       branch: ${{ github.ref_name }}
       commitMessage: "[ImageUpdater] ${{ github.ref_name }} → ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ needs.build.outputs.tag }}"
-      
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
 
@@ -142,4 +144,3 @@ jobs:
     
   
   
-
