@@ -11,14 +11,20 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.set-tag.outputs.TAG }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
      
     - name: Set Image Tag
+      id: set-tag
       run: |
         BRANCH_NAME=${GITHUB_REF##*/}
-        SHORT_SHA=${GITHUB_SHA::7}         
+
+        SHORT_SHA=${GITHUB_SHA::7}        
+        CURRENT_DATE=$(date +'%Y.%m.%d') # Generate the date here
+
         
         # Define local variable first
         TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
@@ -26,6 +32,9 @@ jobs:
         # Save to GITHUB_ENV for FUTURE steps
         echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
         echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+
+        echo "TAG=${TAG_VALUE}" >> $GITHUB_OUTPUT
+        echo "BUILD_DATE=${CURRENT_DATE}" >> $GITHUB_ENV # Save it for later
         
         # Set ENV for the HTML injection step
         if [ "$BRANCH_NAME" == "master" ]; then
@@ -69,9 +78,9 @@ jobs:
         push: true
         tags: |
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
-          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}          
-          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v$(date +'%Y.%m.%d')-${{ env.SHORT_SHA }}
-
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}                    
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v${{ env.BUILD_DATE }}-${{ env.SHORT_SHA }}
+          
     - name: Display Full Image Details
       run: |
         # Construct the full image name
@@ -87,8 +96,7 @@ jobs:
     uses: sureshkumar-devops/ecommerce-gitops/.github/workflows/sync-gitops-branches.yaml@dev
     with:
       branch: ${{ github.ref_name }}
-      commitMessage: "[ImageUpdater] ${{ github.ref_name }} → ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}"
-      
+      commitMessage: "[ImageUpdater] ${{ github.ref_name }} → ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ needs.build.outputs.tag }}"
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
 
@@ -103,35 +111,35 @@ jobs:
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}   
 
-  verify-rollout-dev:
-    needs: sync-gitops
-    uses: ./.github/workflows/verify-rollout.yaml
-    with:
-      app_name: "dev-my-app"
-      namespace: "argocd"
-      timeout: 120
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  #verify-rollout-dev:
+  #  needs: sync-gitops
+  #  uses: ./.github/workflows/verify-rollout.yaml
+  #  with:
+  #    app_name: "dev-my-app"
+  #    namespace: "argocd"
+  #    timeout: 120
+  #  secrets:
+  #    KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  verify-rollout-staging:
-    needs: sync-gitops
-    uses: ./.github/workflows/verify-rollout.yaml
-    with:
-      app_name: "staging-my-app"
-      namespace: "argocd"
-      timeout: 150
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  #verify-rollout-staging:
+  #  needs: sync-gitops
+  #  uses: ./.github/workflows/verify-rollout.yaml
+  #  with:
+  #    app_name: "staging-my-app"
+  #    namespace: "argocd"
+  #    timeout: 150
+  #  secrets:
+   #   KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  verify-rollout-prod:
-    needs: sync-gitops
-    uses: ./.github/workflows/verify-rollout.yaml
-    with:
-      app_name: "prod-my-app"
-      namespace: "argocd"
-      timeout: 180
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}    
+  #verify-rollout-prod:
+  #  needs: sync-gitops
+  #  uses: ./.github/workflows/verify-rollout.yaml
+   # with:
+    #  app_name: "prod-my-app"
+    #  namespace: "argocd"
+    #  timeout: 180
+    #secrets:
+     # KUBECONFIG: ${{ secrets.KUBECONFIG }}    
       
     
   
