@@ -61,8 +61,8 @@ jobs:
        # Read tag from SOURCE branch
        git checkout origin/$SRC_BRANCH
         
-       IMAGE_REPO=$(grep repository environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d '"')
-       IMAGE_TAG=$(grep tag environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d '"')          
+       IMAGE_REPO=$(grep repository environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d '"' | tr -d '\r')       
+       IMAGE_TAG=$(grep tag environments/$SRC_ENV/values.yaml | awk '{print $2}' | tr -d '"' | tr -d '\r')
 
        echo "Found Image Tag: $IMAGE_TAG"
        echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC_ENV → $DEST_ENV"
@@ -71,8 +71,10 @@ jobs:
        git checkout $DEST_BRANCH
 
        # Update destination values.yaml       
-       sed -i "s|repository:.*|repository: ${IMAGE_REPO}|" environments/${DEST_ENV}/values.yaml
-       sed -i "s|tag:.*|tag: \"${IMAGE_TAG}\"|" environments/${DEST_ENV}/values.yaml
+       #sed -i "s|repository:.*|repository: ${IMAGE_REPO}|" environments/${DEST_ENV}/values.yaml
+       sed -i "s#repository:.*#repository: ${IMAGE_REPO}#" environments/${DEST_ENV}/values.yaml
+       sed -i "s#tag:.*#tag: \"${IMAGE_TAG}\"#" environments/${DEST_ENV}/values.yaml
+       #sed -i "s|tag:.*|tag: \"${IMAGE_TAG}\"|" environments/${DEST_ENV}/values.yaml
 
        echo "Promoting $IMAGE_REPO:$IMAGE_TAG from $SRC_ENV → $DEST_ENV"       
 
