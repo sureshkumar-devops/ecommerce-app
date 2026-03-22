@@ -77,7 +77,7 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |          
-          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:dev-${{ env.TAG }}
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}                    
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v${{ env.BUILD_DATE }}-${{ env.SHORT_SHA }}
           
@@ -95,7 +95,7 @@ jobs:
       run: |
           # 1. Define the tags in an array
           TAGS=(
-            "dev-${{ env.TAG }}"
+            "${{ env.TAG }}"
             "stag-${{ env.SHORT_SHA }}"
             "v${{ env.BUILD_DATE }}-${{ env.SHORT_SHA }}"
           )
