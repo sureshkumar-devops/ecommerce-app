@@ -76,8 +76,8 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: |
-          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:${{ env.TAG }}
+        tags: |          
+          ${{ vars.DOCKER_USERNAME }}/ecommerce-app:dev-${{ env.TAG }}
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:stag-${{ env.SHORT_SHA }}                    
           ${{ vars.DOCKER_USERNAME }}/ecommerce-app:v${{ env.BUILD_DATE }}-${{ env.SHORT_SHA }}
           
@@ -89,7 +89,31 @@ jobs:
         # \033[1;32m is Bold Green | \033[1;36m is Bold Cyan | \033[0m is Reset
         echo -e "DOCKER IMAGE: \033[1;36m${{ vars.DOCKER_USERNAME }}/ecommerce-app\033[0m"
         echo -e "IMAGE TAG:    \033[1;32m${{ env.TAG }}\033[0m"
-        echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"    
+        echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"  
+
+    - name: Display All Tags
+      run: |
+          # 1. Define the tags in an array
+          TAGS=(
+            "dev-${{ env.TAG }}"
+            "stag-${{ env.SHORT_SHA }}"
+            "v${{ env.BUILD_DATE }}-${{ env.SHORT_SHA }}"
+          )
+
+          IMAGE_NAME="${{ vars.DOCKER_USERNAME }}/ecommerce-app"
+
+          # 2. Loop through the array to display each one
+          echo -e "\033[1;34m--- DOCKER IMAGE BUILD LIST ---\033[0m"
+          
+          for TAG in "${TAGS[@]}"; do
+            FULL_IMAGE="${IMAGE_NAME}:${TAG}"
+            
+            echo -e "-----------------------------------"
+            echo -e "DOCKER IMAGE: \033[1;36m${IMAGE_NAME}\033[0m"
+            echo -e "IMAGE TAG:    \033[1;32m${TAG}\033[0m"
+            echo -e "FULL PUSH:    \033[1m${FULL_IMAGE}\033[0m"
+          done
+        
         
   sync-gitops:
     needs: build
