@@ -23,24 +23,24 @@ jobs:
         BRANCH_NAME=${GITHUB_REF##*/}
 
         SHORT_SHA=${GITHUB_SHA::7}        
-        CURRENT_DATE=$(date +'%Y.%m.%d') # Generate the date here
-
+        #CURRENT_DATE=$(date +'%Y.%m.%d') # Generate the date here
+        CURRENT_DATE=$(date +'%d.%m.%y') # 26.03.26       
         
         # Define local variable first
         TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
         
         # Save to GITHUB_ENV for FUTURE steps
-        echo "TAG=${TAG_VALUE}" >> $GITHUB_ENV     
-        echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+        echo "TAG=${TAG_VALUE}" >> "$GITHUB_ENV"     
+        echo "SHORT_SHA=${SHORT_SHA}" >> "$GITHUB_ENV"
 
-        echo "TAG=${TAG_VALUE}" >> $GITHUB_OUTPUT
-        echo "BUILD_DATE=${CURRENT_DATE}" >> $GITHUB_ENV # Save it for later
+        echo "TAG=${TAG_VALUE}" >> "$GITHUB_OUTPUT"
+        echo "BUILD_DATE=${CURRENT_DATE}" >> "$GITHUB_ENV" # Save it for later
         
         # Set ENV for the HTML injection step
         if [ "$BRANCH_NAME" == "master" ]; then
-           echo "DEPLOY_TARGET=prod" >> $GITHUB_ENV;
+           echo "DEPLOY_TARGET=prod" >> "$GITHUB_ENV";
         else
-           echo "DEPLOY_TARGET=$BRANCH_NAME" >> $GITHUB_ENV;
+           echo "DEPLOY_TARGET=$BRANCH_NAME" >> "$GITHUB_ENV";
         fi
 
         # Use the local variable here!
