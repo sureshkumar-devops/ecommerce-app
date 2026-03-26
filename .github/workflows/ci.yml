@@ -23,8 +23,7 @@ jobs:
         BRANCH_NAME=${GITHUB_REF##*/}
 
         SHORT_SHA=${GITHUB_SHA::7}        
-        CURRENT_DATE=$(date +'%Y.%m.%d') # Generate the date here
-        #CURRENT_DATE=$(date +'%d.%m.%y') # 26.03.26       
+        CURRENT_DATE=$(date +'%Y.%m.%d') # Generate the date here            
         
         # Define local variable first
         TAG_VALUE="${BRANCH_NAME}-${SHORT_SHA}"
