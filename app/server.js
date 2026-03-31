@@ -19,6 +19,22 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
+// Add a counter for all requests
+const httpRequestCounter = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status']
+});
+
+// Middleware to count every request
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestCounter.labels(req.method, req.path, res.statusCode).inc();
+  });
+  next();
+});
+
+
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get("/", (req, res) => {
