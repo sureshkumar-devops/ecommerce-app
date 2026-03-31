@@ -1,40 +1,71 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const client = require('prom-client'); // ✅ 1. Import Prometheus client
+const client = require("prom-client");
 
 const app = express();
 
-// ✅ 2. Initialize default metrics collection (CPU, Memory, etc.)
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ register: client.register });
+// ✅ Default system metrics (CPU, memory, etc.)
+client.collectDefaultMetrics();
 
-// ✅ 3. Create the /metrics endpoint for Prometheus to scrape
-app.get('/metrics', async (req, res) => {
-  try {
-    res.set('Content-Type', client.register.contentType);
-    res.end(await client.register.metrics());
-  } catch (ex) {
-    res.status(500).end(ex);
-  }
-});
+// ===============================
+// ✅ CUSTOM METRICS
+// ===============================
 
-// Add a counter for all requests
+// Request Counter
 const httpRequestCounter = new client.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
   labelNames: ['method', 'route', 'status']
 });
 
-// Middleware to count every request
+// Latency Histogram (NEW 🔥)
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route', 'status'],
+  buckets: [0.1, 0.3, 0.5, 1, 1.5, 2, 5]
+});
+
+// ===============================
+// ✅ MIDDLEWARE
+// ===============================
 app.use((req, res, next) => {
+  const start = process.hrtime();
+
   res.on('finish', () => {
-    httpRequestCounter.labels(req.method, req.path, res.statusCode).inc();
+    const diff = process.hrtime(start);
+    const duration = diff[0] + diff[1] / 1e9;
+
+    // Count requests
+    httpRequestCounter
+      .labels(req.method, req.path, res.statusCode)
+      .inc();
+
+    // Record latency
+    httpRequestDuration
+      .labels(req.method, req.path, res.statusCode)
+      .observe(duration);
   });
+
   next();
 });
 
+// ===============================
+// ✅ METRICS ENDPOINT
+// ===============================
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+  } catch (err) {
+    res.status(500).end(err);
+  }
+});
 
+// ===============================
+// ✅ STATIC + ROUTES
+// ===============================
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get("/", (req, res) => {
@@ -44,13 +75,12 @@ app.get("/", (req, res) => {
     if (err) {
       return res.status(500).send("Error reading file");
     }
-    // Replace placeholders with environment variables
-    const version = process.env.APP_VERSION || "1.0.0";
+
     const env = process.env.DEPLOY_ENV || "development";
     const branch = process.env.GIT_BRANCH || "main";
     const tag = process.env.TAG || "v1.0.0";
 
-    let modifiedHtml = data
+    const modifiedHtml = data
       .replace("${DEPLOY_ENV}", env)
       .replace("${GIT_BRANCH}", branch)
       .replace("${TAG}", tag);
@@ -59,8 +89,10 @@ app.get("/", (req, res) => {
   });
 });
 
+// ===============================
+// ✅ START SERVER
+// ===============================
 app.listen(3000, () => {
   console.log("Server running on port 3000");
   console.log("Metrics available at /metrics");
 });
-
