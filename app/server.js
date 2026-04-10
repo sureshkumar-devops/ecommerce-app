@@ -77,19 +77,19 @@ app.get("/", (req, res) => {
     }
 
      // Pull the secrets injected by the Vault Plugin
-    const dbUser = process.env.DB_USER || "Not Set";
-    const dbPass = process.env.DB_PASS || "Not Set";
+    const dbUser = process.env.DB_USER || "User missing in Env";
+    const dbPass = process.env.DB_PASS || "Pass missing in Env";
 
     const env = process.env.DEPLOY_ENV || "development";
-    const branch = process.env.GIT_BRANCH || "main";
+    const branch = process.env.GIT_BRANCH || "master";
     const tag = process.env.TAG || "v1.0.0";
 
     const modifiedHtml = data
-      .replace("${DEPLOY_ENV}", env)
-      .replace("${GIT_BRANCH}", branch)
-      .replace("${TAG}", tag)
-      .replace("${DB_USER}", dbUser)   
-      .replace("${DB_PASS}", dbPass);   
+      .replace(/\${DEPLOY_ENV}/g, env)
+      .replace(/\${GIT_BRANCH}/g, branch)
+      .replace(/\${TAG}/g, tag)
+      .replace(/\${DB_USER}/g, dbUser)
+      .replace(/\${DB_PASS}/g, dbPass);
 
     res.send(modifiedHtml);
   });
