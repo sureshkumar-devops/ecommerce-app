@@ -76,6 +76,10 @@ app.get("/", (req, res) => {
       return res.status(500).send("Error reading file");
     }
 
+     // Pull the secrets injected by the Vault Plugin
+    const dbUser = process.env.DB_USER || "Not Set";
+    const dbPass = process.env.DB_PASS || "Not Set";
+
     const env = process.env.DEPLOY_ENV || "development";
     const branch = process.env.GIT_BRANCH || "main";
     const tag = process.env.TAG || "v1.0.0";
@@ -83,7 +87,9 @@ app.get("/", (req, res) => {
     const modifiedHtml = data
       .replace("${DEPLOY_ENV}", env)
       .replace("${GIT_BRANCH}", branch)
-      .replace("${TAG}", tag);
+      .replace("${TAG}", tag)
+      .replace("${DB_USER}", dbUser)   
+      .replace("${DB_PASS}", dbPass);   
 
     res.send(modifiedHtml);
   });
